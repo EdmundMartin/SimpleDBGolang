@@ -1,13 +1,16 @@
 package logmanager
 
-import "SimpleDB/pkg/filemanager"
+import (
+	"SimpleDB/pkg/filemanager"
+)
 
 type LogIterator struct {
-	fm         *filemanager.FileManager
-	blk        *filemanager.BlockId
-	page       *filemanager.Page
-	currentPos int
-	boundary   int
+	fm                *filemanager.FileManager
+	blk               *filemanager.BlockId
+	page              *filemanager.Page
+	currentPos        int
+	boundary          int
+	finishedIteration bool
 }
 
 func NewLogIterator(manager *filemanager.FileManager, blk *filemanager.BlockId) (*LogIterator, error) {
@@ -36,6 +39,15 @@ func (li *LogIterator) Next() ([]byte, error) {
 		}
 	}
 	contents := li.page.GetBytes(li.currentPos)
+	if len(contents) == 0 {
+		// TODO - Verify logic
+		li.blk = filemanager.NewBlockID(li.blk.Filename, li.blk.BlockNum-1)
+		err := li.moveToBlock(li.blk)
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	}
 	li.currentPos += 4 + len(contents)
 	return contents, nil
 }

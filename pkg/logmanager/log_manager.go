@@ -68,7 +68,7 @@ func (lm *LogManager) Append(record []byte) (int, error) {
 	}
 	recpos := int(boundary) - bytesNeeded
 	lm.logPage.PutBytes(record, recpos)
-	lm.logPage.PutUInt32(0, recpos)
+	lm.logPage.PutUInt32(uint32(recpos), 0)
 	lm.LatestLSN++
 	return lm.LatestLSN, nil
 }
